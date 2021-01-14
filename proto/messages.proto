@@ -4,7 +4,7 @@ package grpc.messages;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/bkpeh/grpc/proto/messages";
+option go_package = "github.com/bkpeh/grpc/proto;messages";
 
 message Person {
     string name = 1;
@@ -30,4 +30,12 @@ google.protobuf.Timestamp last_updated = 5;
 
 message AddressBook {
     repeated Person people = 1;
+}
+
+message Pid {
+    int32 id = 1;
+}
+
+service GetPhoneNumber {
+    rpc GetNum(Pid) returns (Person.PhoneNumber) {}
 }
