@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc.messages;
+package messages;
 
 import "google/protobuf/timestamp.proto";
 
@@ -37,5 +37,5 @@ message Pid {
 }
 
 service GetPhoneNumber {
-    rpc GetNum(Pid) returns (Person.PhoneNumber) {}
+    rpc GetNum(Pid) returns (Person) {}
 }
