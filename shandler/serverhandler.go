@@ -72,10 +72,14 @@ func getfromDB() {
 	a := types.AttributeValueMemberN{"1020"}
 	output, err := svc.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String("People"),
-		Key:       map[string]types.AttributeValueMemberN{&a},
+		Key:       map[string]types.AttributeValue{"Id": &a},
 	})
 
-	fmt.Println("output:", output)
+	//item := Item{}
+
+	//err = dynamodbattribute.UnmarshalMap(result.Item, &item)
+
+	fmt.Println("output:", output.Item)
 
 	// Build the request with its input parameters
 	resp, err := svc.ListTables(context.TODO(), &dynamodb.ListTablesInput{
