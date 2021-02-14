@@ -30,5 +30,5 @@ func main() {
 		fmt.Println("Respond error.", err)
 	}
 
-	fmt.Println("Respond:", respond.Name)
+	fmt.Println("Respond:", respond)
 }

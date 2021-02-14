@@ -46,3 +46,28 @@ func TestGetNum(t *testing.T) {
 	}
 
 }
+
+/*
+func TestGetfromdb(t *testing.T) {
+	customResolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		if service == dynamodb.ServiceID && region == "us-west-2" {
+			return aws.Endpoint{
+				PartitionID:   "aws",
+				URL:           "http://localhost:8000",
+				SigningRegion: "us-west-2",
+			}, nil
+		}
+		// returning EndpointNotFoundError will allow the service to fallback to it's default resolution
+		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+	})
+
+	cfg, _ := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"), config.WithEndpointResolver(customResolver))
+	svc := dynamodb.NewFromConfig(cfg)
+
+	result := getfromDB(svc)
+
+	if result != true {
+		fmt.Println("Unexpected result.")
+	}
+}
+*/
