@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	messages "github.com/bkpeh/grpc/proto"
 )
 
@@ -30,16 +34,16 @@ func TestGetNum(t *testing.T) {
 
 			switch v.testname {
 			case "Test1":
-				if respond.Name != "Wester" {
-					fmt.Println("Expect Wester, Got ", respond.Name)
+				if respond.Name != "Easter" {
+					t.Fatal("Expect Easter, Got ", respond.Name)
 				}
 			case "Test2":
 				if respond != nil {
-					fmt.Println("Expect NIL, Got ", respond.Name)
+					t.Fatal("Expect NIL, Got ", respond.Name)
 				}
 			case "Test 3":
 				if err == nil {
-					fmt.Println("Expect Error:INVALID_ID, Got NIL")
+					t.Fatal("Expect Error:INVALID_ID, Got NIL")
 				}
 			}
 		})
@@ -47,7 +51,16 @@ func TestGetNum(t *testing.T) {
 
 }
 
-/*
+type mockDynamoDBClient struct {
+	dynamodbiface.DynamoDBAPI
+}
+
+func (m *mockDynamoDBClient) GetItem(input *dynamodb.BatchGetItemInput) (*dynamodb.GetItemOutput, error) {
+	// mock response/functionality
+
+	return nil, nil
+}
+
 func TestGetfromdb(t *testing.T) {
 	customResolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		if service == dynamodb.ServiceID && region == "us-west-2" {
@@ -64,10 +77,9 @@ func TestGetfromdb(t *testing.T) {
 	cfg, _ := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"), config.WithEndpointResolver(customResolver))
 	svc := dynamodb.NewFromConfig(cfg)
 
-	result := getfromDB(svc)
+	result, _ := getfromDB(svc, &messages.Pid{Id: 0})
 
-	if result != true {
+	if result != nil {
 		fmt.Println("Unexpected result.")
 	}
 }
-*/

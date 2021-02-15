@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -39,37 +39,38 @@ func (s *Server) GetNum(ctx context.Context, in *Pid) (*Person, error) {
 	cfg, _ := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"), config.WithEndpointResolver(customResolver))
 	svc := dynamodb.NewFromConfig(cfg)
 
-	getfromDB(svc)
+	result, err := getfromDB(svc, in)
+	/*
+		conf := aws.Config{
+			Region:   aws.String("us-west-2"),
+			Endpoint: aws.String("http://localhost:8000"),
+		}
 
-	x := &Person{
-		Name:  "Wester",
-		Id:    1020,
-		Email: "wester@gmail.com",
-		Phones: []*Person_PhoneNumber{
-			{
-				Number: "1234567",
-				Type:   Person_HOME,
-			},
-		},
-		LastUpdated: timestamppb.Now(),
+		sess := session.New(&conf)
+		oldsvc := dynamodb.New(sess)
+
+		result, err := getfromDB2(oldsvc, in)
+	*/
+	if err != nil {
+		fmt.Println("Error.", err)
 	}
 
 	if in.Id == 0 {
 		return nil, errors.New("INVALID_ID")
 	}
 
-	if in.Id == x.Id {
-		return x, nil
+	if in.Id == result.Id {
+		return result, nil
 	}
 
 	return nil, nil
 }
 
-func getfromDB(svc *dynamodb.Client) bool {
+func getfromDB(svc *dynamodb.Client, pid *Pid) (*Person, error) {
 
 	output, err := svc.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String("People"),
-		Key:       map[string]types.AttributeValue{"Id": &types.AttributeValueMemberN{"1020"}},
+		Key:       map[string]types.AttributeValue{"Id": &types.AttributeValueMemberN{strconv.Itoa(int(pid.Id))}},
 	})
 
 	p := &Person{}
@@ -91,7 +92,7 @@ func getfromDB(svc *dynamodb.Client) bool {
 
 	if err != nil {
 		fmt.Println("Error in MarshalMap", err)
-		return false
+		return nil, errors.New("Error in MarshalMap" + err.Error())
 	}
 
 	_, err = svc.PutItem(context.TODO(), &dynamodb.PutItemInput{
@@ -101,14 +102,14 @@ func getfromDB(svc *dynamodb.Client) bool {
 
 	if err != nil {
 		fmt.Println("Error in PutItem", err)
-		return false
+		return nil, errors.New("Error in PutItem" + err.Error())
 	}
 
 	err = attributevalue.UnmarshalMap(output.Item, p)
 
 	if err != nil {
 		fmt.Println("Error in UnmarshalMap", err)
-		return false
+		return nil, errors.New("Error in UnmarshalMap" + err.Error())
 	}
 
 	fmt.Println("p:", p)
@@ -118,13 +119,94 @@ func getfromDB(svc *dynamodb.Client) bool {
 		Limit: aws.Int32(5)})
 
 	if err != nil {
-		log.Fatalf("failed to list tables, %v", err)
-		return false
+		fmt.Println("Error in list table", err)
+		return nil, errors.New("Error in list table" + err.Error())
 	}
 
 	for _, tableName := range resp.TableNames {
 		fmt.Println("Table Name:", tableName)
 	}
 
-	return true
+	return p, nil
 }
+
+/*
+func getfromDB2(svc dynamodbiface.DynamoDBAPI, pid *Pid) (*Person, error) {
+
+	output, err := svc.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String("People"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"Id": &dynamodb.AttributeValue{N: aws.String("1020")},
+		},
+	})
+
+	if output.Item == nil {
+		fmt.Println("Error in GetItem", err)
+	}
+
+	p := &Person{}
+
+	y := &Person{
+		Name:  "Wester",
+		Id:    1090,
+		Email: "wester@gmail.com",
+		Phones: []*Person_PhoneNumber{
+			{
+				Number: "1234567",
+				Type:   Person_HOME,
+			},
+		},
+		LastUpdated: timestamppb.Now(),
+	}
+
+	item, err := dynamodbattribute.MarshalMap(y)
+
+	if err != nil {
+		fmt.Println("Error in MarshalMap", err)
+		return nil, errors.New("Error in MarshalMap" + err.Error())
+	}
+
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String("People2"),
+		Item:      item,
+	}
+
+	_, err = svc.PutItem(input)
+
+	if err != nil {
+		fmt.Println("Error in PutItem", err)
+		return nil, errors.New("Error in PutItem" + err.Error())
+	}
+	/*
+		err = dynamodbattribute.UnmarshalMap(output.Item, p)
+
+		if err != nil {
+			fmt.Println("Error in UnmarshalMap", err)
+			return nil, errors.New("Error in UnmarshalMap" + err.Error())
+		}
+
+			newitem := item{}
+
+			err = dynamodbattribute.UnmarshalMap(output.Item, &newitem)
+
+			if err != nil {
+				fmt.Println("Error in UnmarshalMap", err)
+			}
+*/
+//fmt.Println("p:", p)
+/*
+		// Build the request with its input parameters
+		resp, err := svc.ListTables(&dynamodb.ListTablesInput{})
+
+		if err != nil {
+			fmt.Println("Error in list table", err)
+			return nil, errors.New("Error in list table" + err.Error())
+		}
+
+		for _, tableName := range resp.TableNames {
+			fmt.Println("Table Name:", tableName)
+		}
+
+	return p, nil
+}
+*/
